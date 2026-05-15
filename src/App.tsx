@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   AlertTriangle
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, ReactNode } from "react";
 
 const PHONE_NUMBER = "0579649426";
 const WHATSAPP_URL = `https://wa.me/966${PHONE_NUMBER.substring(1)}`;
@@ -68,8 +68,44 @@ const services = [
   }
 ];
 
+const LegalModal = ({ isOpen, onClose, title, content }: { isOpen: boolean, onClose: () => void, title: string, content: ReactNode }) => {
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        onClick={onClose}
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" 
+      />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="relative bg-slate-900 border border-white/10 rounded-[2rem] w-full max-w-4xl max-h-[80vh] overflow-y-auto p-8 sm:p-12 shadow-2xl"
+      >
+        <button onClick={onClose} className="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors" id="close-legal-modal">
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <div dir="rtl">
+          <h2 className="text-3xl font-black mb-8 text-orange-500">{title}</h2>
+          <div className="text-slate-300 leading-relaxed space-y-6 text-lg">
+            {content}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 export default function App() {
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [activeLegal, setActiveLegal] = useState<'privacy' | 'terms' | null>(null);
 
   const toggleRegion = (name: string) => {
     setActiveRegion(activeRegion === name ? null : name);
@@ -347,8 +383,11 @@ export default function App() {
           <h2 className="text-5xl md:text-7xl font-black mb-10 tracking-tight leading-tight">
             هل أنت عالق في الطريق؟ <br /> نحن هنا للمساعدة
           </h2>
-          <p className="text-xl md:text-2xl font-bold mb-16 max-w-2xl mx-auto opacity-80">
+          <p className="text-xl md:text-2xl font-bold mb-8 max-w-2xl mx-auto opacity-80">
             اتصل بنا الآن وسنقوم بإرسال أقرب سطحة لموقعك فوراً. خدمتنا سريعة، احترافية، وبأسعار عادلة.
+          </p>
+          <p className="text-sm font-bold mb-12 opacity-60 text-slate-900 bg-white/20 w-fit mx-auto px-4 py-1 rounded-full">
+            * يتم تحديد السعر بناءً على المسافة ونوع الخدمة المطلوبة
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-10">
             <a 
@@ -374,34 +413,90 @@ export default function App() {
       {/* Footer */}
       <footer className="py-20 bg-slate-950 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-16 mb-16">
             <div>
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-black">
                   <Truck className="w-7 h-7" />
                 </div>
                 <h1 className="text-3xl font-black tracking-tight">سطحة الرياض</h1>
               </div>
-              <div className="flex flex-wrap gap-10">
+              <p className="text-slate-400 leading-relaxed font-medium mb-8">
+                نحن نقدم خدمات نقل السيارات في الرياض بأعلى معايير الجودة والأمان. فريقنا متواجد لخدمتكم على مدار الساعة طوال أيام الأسبوع.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-8 text-white">روابط سريعة</h3>
+              <div className="flex flex-col gap-4 text-slate-400 font-medium">
+                <a href="#services" className="hover:text-orange-500 transition-colors">خدماتنا</a>
+                <a href="#coverage" className="hover:text-orange-500 transition-colors">مناطق التغطية</a>
+                <button onClick={() => setActiveLegal('privacy')} className="text-right hover:text-orange-500 transition-colors">سياسة الخصوصية</button>
+                <button onClick={() => setActiveLegal('terms')} className="text-right hover:text-orange-500 transition-colors">الشروط والأحكام</button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-8 text-white">تواصل معنا</h3>
+              <div className="flex flex-col gap-6">
                 <div>
                   <p className="text-xs opacity-40 uppercase tracking-widest font-bold mb-1">الرقم الموحد</p>
-                  <p className="text-2xl font-bold">{PHONE_NUMBER}</p>
+                  <p className="text-2xl font-bold text-orange-500">{PHONE_NUMBER}</p>
                 </div>
                 <div>
-                  <p className="text-xs opacity-40 uppercase tracking-widest font-bold mb-1">الاستجابة</p>
-                  <p className="text-2xl font-bold">متوفر 24/7</p>
+                  <p className="text-xs opacity-40 uppercase tracking-widest font-bold mb-1">الموقع</p>
+                  <p className="text-lg font-bold">الرياض، المملكة العربية السعودية</p>
                 </div>
               </div>
             </div>
-            <div className="md:text-left">
-              <p className="text-sm font-bold text-slate-500">
-                &copy; {new Date().getFullYear()} سطحــة الرياض المتيمــزة
-              </p>
-              <p className="text-xs text-slate-700 mt-2 font-medium">نقل آمن | سرعة قصوى | خدمة احترافية</p>
+          </div>
+
+          <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-sm font-bold text-slate-500">
+              &copy; {new Date().getFullYear()} سطحــة الرياض المتيمــزة. جميع الحقوق محفوظة.
+            </p>
+            <div className="flex gap-8">
+               <p className="text-xs text-slate-700 font-medium whitespace-nowrap">نقل آمن | سرعة قصوى | خدمة احترافية</p>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Legal Modals */}
+      <LegalModal 
+        isOpen={activeLegal === 'privacy'} 
+        onClose={() => setActiveLegal(null)}
+        title="سياسة الخصوصية"
+        content={
+          <>
+            <p>نحن في "سطحة الرياض المتميزة" نلتزم بحماية خصوصيتكم. نوضح فيما يلي كيفية تعاملنا مع البيانات:</p>
+            <h4 className="font-bold text-white text-xl">1. المعلومات التي نجمعها</h4>
+            <p>نقوم بجمع أرقام الهواتف والمواقع الجغرافية التي يشاركها العملاء فقط لتنفيذ طلبات نقل السيارات.</p>
+            <h4 className="font-bold text-white text-xl">2. كيف نستخدم معلوماتكم</h4>
+            <p>تُستخدم المعلومات حصراً للتواصل مع العميل وإرسال السطحة إلى موقعه بدقة.</p>
+            <h4 className="font-bold text-white text-xl">3. حماية البيانات</h4>
+            <p>نلتزم بعدم مشاركة أو بيع أي بيانات خاصة بعملائنا لأي جهة خارجية تحت أي ظرف.</p>
+            <p>باستخدامكم لخدماتنا، فإنكم توافقون على هذه السياسة.</p>
+          </>
+        }
+      />
+      <LegalModal 
+        isOpen={activeLegal === 'terms'} 
+        onClose={() => setActiveLegal(null)}
+        title="الشروط والأحكام"
+        content={
+          <>
+            <p>يرجى قراءة شروط الخدمة بعناية:</p>
+            <h4 className="font-bold text-white text-xl">1. نطاق الخدمة</h4>
+            <p>نقدم خدمات نقل السيارات والمساعدات على الطريق داخل مدينة الرياض والمناطق المحيطة بها.</p>
+            <h4 className="font-bold text-white text-xl">2. الأسعار والدفع</h4>
+            <p>يتم الاتفاق على السعر بناءً على نوع الخدمة والمسافة قبل البدء، ويتم الدفع عند إتمام الخدمة.</p>
+            <h4 className="font-bold text-white text-xl">3. المسؤولية</h4>
+            <p>نحن نضمن نقل سيارتكم بأمان واحترافية عالية، ويجب على العميل التأكد من خلو السيارة من أي متعلقات شخصية ثمينة قبل النقل.</p>
+            <p>نحن نعمل وفقاً للأنظمة واللوائح المعمول بها في المملكة العربية السعودية.</p>
+          </>
+        }
+      />
     </div>
   );
 }
